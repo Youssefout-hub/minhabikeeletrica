@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 // ===== TYPES =====
 interface SliderProps {
@@ -120,6 +121,13 @@ export default function HomePage() {
   const [precoBike, setPrecoBike] = useState(4299);
   const [precoPatinete, setPrecoPatinete] = useState(2899);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [bikes, setBikes] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase.from('bikes').select('*').then(({ data }) => {
+      setBikes(data || []);
+    });
+  }, []);
 
   const calcular = useCallback(() => {
     const kmMes = kmDia * diasMes;

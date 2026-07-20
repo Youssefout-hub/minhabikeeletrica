@@ -126,6 +126,7 @@ export default function HomePage() {
   useEffect(() => {
     supabase.from('bikes').select('*').then(({ data }) => {
       setBikes(data || []);
+      console.log('Bikes from Supabase:', data);
     });
   }, []);
 

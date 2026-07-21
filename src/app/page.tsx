@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
-// ===== TYPES =====
 interface SliderProps {
   label: string;
   value: number;
@@ -19,7 +18,7 @@ interface ResultProps {
   title: string;
   value: string;
   sub: string;
-  color: 'green' | 'blue' | 'yellow' | 'purple';
+  color: string;
   icon: string;
 }
 
@@ -31,23 +30,41 @@ interface ArticleProps {
   href: string;
 }
 
-// ===== SLIDER =====
+function Header() {
+  return (
+    <header className="sticky top-0 z-30 border-b border-slate-700 bg-slate-900 px-6 py-4">
+      <div className="mx-auto flex max-w-6xl items-center justify-between">
+        <a href="/" className="flex items-center gap-3 text-xl font-bold text-white no-underline">
+          <img src="/logo.png" alt="Logo" className="h-9 w-auto" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <span>Minha <span className="text-orange-500">Bike</span></span>
+        </a>
+        <nav className="flex gap-6 text-sm text-slate-300">
+          <a href="/" className="hover:text-white">Início</a>
+          <a href="/calculadora" className="hover:text-white">Calculadora</a>
+          <a href="/recomendador" className="hover:text-white">Recomendador</a>
+          <a href="/sobre" className="hover:text-white">Sobre</a>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
 function Slider({ label, value, min, max, step, unit, onChange, icon }: SliderProps) {
   const pct = ((value - min) / (max - min)) * 100;
   return (
-    <div className="slider-container">
-      <div className="slider-header">
-        <label className="slider-label">
-          <span className="slider-icon">{icon}</span>
+    <div className="mb-6">
+      <div className="mb-2 flex items-center justify-between">
+        <label className="flex items-center gap-2 text-sm text-slate-300">
+          <span className="text-xl">{icon}</span>
           {label}
         </label>
-        <span className="slider-value-badge">
+        <span className="rounded-full bg-gradient-to-r from-orange-500 to-orange-400 px-3 py-1 text-sm font-semibold text-white">
           {value} {unit}
         </span>
       </div>
-      <div className="slider-track-wrapper">
-        <div className="slider-track">
-          <div className="slider-fill" style={{ width: `${pct}%` }} />
+      <div className="relative flex h-8 items-center">
+        <div className="absolute h-2 w-full rounded-full bg-slate-900">
+          <div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-orange-400" style={{ width: `${pct}%` }} />
         </div>
         <input
           type="range"
@@ -56,11 +73,11 @@ function Slider({ label, value, min, max, step, unit, onChange, icon }: SliderPr
           step={step}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="slider-input"
+          className="absolute z-10 h-full w-full cursor-pointer opacity-0"
         />
-        <div className="slider-thumb" style={{ left: `calc(${pct}% - 12px)` }} />
+        <div className="absolute z-0 h-6 w-6 rounded-full border-3 border-white bg-gradient-to-r from-orange-500 to-orange-400 shadow-lg" style={{ left: `calc(${pct}% - 12px)` }} />
       </div>
-      <div className="slider-range-labels">
+      <div className="mt-1 flex justify-between text-xs text-slate-400">
         <span>{min} {unit}</span>
         <span>{max} {unit}</span>
       </div>
@@ -68,50 +85,63 @@ function Slider({ label, value, min, max, step, unit, onChange, icon }: SliderPr
   );
 }
 
-// ===== RESULT CARD =====
 function ResultCard({ title, value, sub, color, icon }: ResultProps) {
-  const colorMap = {
-    green: { bg: 'result-green', text: 'text-green', border: 'border-green' },
-    blue: { bg: 'result-blue', text: 'text-blue', border: 'border-blue' },
-    yellow: { bg: 'result-yellow', text: 'text-yellow', border: 'border-yellow' },
-    purple: { bg: 'result-purple', text: 'text-purple', border: 'border-purple' },
-  };
-  const c = colorMap[color];
+  const borderClass = {
+    green: 'border-l-green-500',
+    blue: 'border-l-blue-500',
+    yellow: 'border-l-yellow-500',
+    purple: 'border-l-purple-500',
+  }[color] || 'border-l-orange-500';
+
+  const textClass = {
+    green: 'text-green-500',
+    blue: 'text-blue-500',
+    yellow: 'text-yellow-500',
+    purple: 'text-purple-500',
+  }[color] || 'text-orange-500';
 
   return (
-    <div className={`result-card ${c.bg} ${c.border}`}>
-      <div className="result-header">
-        <span className="result-icon">{icon}</span>
-        <span className="result-title">{title}</span>
+    <div className={`mb-4 rounded-lg border border-slate-700 bg-slate-900 p-4 ${borderClass} border-l-4`}>
+      <div className="mb-2 flex items-center gap-2">
+        <span className="text-xl">{icon}</span>
+        <span className="text-sm text-slate-300">{title}</span>
       </div>
-      <div className={`result-value ${c.text}`}>{value}</div>
-      <div className="result-sub">{sub}</div>
+      <div className={`text-2xl font-bold ${textClass}`}>{value}</div>
+      <div className="mt-1 text-xs text-slate-400">{sub}</div>
     </div>
   );
 }
 
-// ===== ARTICLE CARD =====
 function ArticleCard({ emoji, title, desc, tags, href }: ArticleProps) {
   return (
-    <a href={href} className="article-card">
-      <div className="article-inner">
-        <div className="article-emoji">{emoji}</div>
-        <div className="article-content">
-          <h3 className="article-title">{title}</h3>
-          <p className="article-desc">{desc}</p>
-          <div className="article-tags">
+    <a href={href} className="mb-4 block rounded-2xl border border-slate-700 bg-slate-800 p-5 no-underline transition-all hover:border-orange-500 hover:translate-x-1">
+      <div className="flex items-start gap-4">
+        <div className="text-3xl">{emoji}</div>
+        <div className="flex-1">
+          <h3 className="mb-2 text-lg font-semibold text-white">{title}</h3>
+          <p className="mb-3 text-sm leading-relaxed text-slate-300">{desc}</p>
+          <div className="flex flex-wrap gap-2">
             {tags.map((t, i) => (
-              <span key={i} className={`article-tag tag-${t.color}`}>{t.text}</span>
+              <span
+                key={i}
+                className={`rounded-full px-3 py-1 text-xs font-medium ${t.color === 'green'
+                    ? 'bg-green-500/20 text-green-400'
+                    : t.color === 'yellow'
+                      ? 'bg-yellow-500/20 text-yellow-400'
+                      : 'bg-blue-500/20 text-blue-400'
+                  }`}
+              >
+                {t.text}
+              </span>
             ))}
           </div>
         </div>
-        <span className="article-arrow">→</span>
+        <span className="text-xl text-orange-500">→</span>
       </div>
     </a>
   );
 }
 
-// ===== MAIN PAGE =====
 export default function HomePage() {
   const [kmDia, setKmDia] = useState(60);
   const [diasMes, setDiasMes] = useState(26);
@@ -154,23 +184,22 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="page-wrapper">
-      {/* HERO */}
-      <section className="hero">
-        <div className="hero-glow" />
-        <div className="hero-content">
-          <h1 className="hero-title">💰 Calculadora de Economia</h1>
-          <p className="hero-subtitle">Compare o custo da bike elétrica vs moto e ônibus. Descubra quanto você economiza por mês.</p>
+    <div className="min-h-screen bg-slate-900">
+      <Header />
+
+      <section className="relative border-b border-slate-700 bg-gradient-to-br from-slate-900 to-slate-800 px-6 py-12 text-center">
+        <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-500 opacity-5 blur-3xl" />
+        <div className="relative z-10">
+          <h1 className="mb-4 text-4xl font-extrabold text-white">💰 Calculadora de Economia</h1>
+          <p className="mx-auto max-w-xl text-lg text-slate-300">Compare o custo da bike elétrica vs moto e ônibus. Descubra quanto você economiza por mês.</p>
         </div>
       </section>
 
-      {/* MAIN */}
-      <main className="main-container">
-        <div className="content-grid">
-          {/* LEFT: Controls */}
-          <div className="left-panel">
-            <div className="panel-card">
-              <h2 className="panel-title">⚙️ Seu Uso</h2>
+      <main className="mx-auto max-w-6xl px-6 py-8">
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          <div>
+            <div className="mb-6 rounded-2xl border border-slate-700 bg-slate-800 p-6">
+              <h2 className="mb-6 text-xl font-semibold text-white">⚙️ Seu Uso</h2>
               <Slider label="Km por dia" value={kmDia} min={10} max={150} step={5} unit="km" icon="📍" onChange={setKmDia} />
               <Slider label="Dias por mês" value={diasMes} min={10} max={31} step={1} unit="dias" icon="📅" onChange={setDiasMes} />
               <Slider label="Preço gasolina" value={precoGasolina} min={3} max={10} step={0.01} unit="R$/L" icon="⛽" onChange={setPrecoGasolina} />
@@ -180,45 +209,42 @@ export default function HomePage() {
               <Slider label="Preço patinete" value={precoPatinete} min={1000} max={7000} step={100} unit="R$" icon="🛴" onChange={setPrecoPatinete} />
             </div>
 
-            <div className="articles-section">
-              <h2 className="section-title">📰 Reviews & Comparativos</h2>
+            <div>
+              <h2 className="mb-6 text-2xl font-bold text-white">📰 Reviews & Comparativos</h2>
               {articles.map((a, i) => (
                 <ArticleCard key={i} {...a} />
               ))}
             </div>
           </div>
 
-          {/* RIGHT: Results (Desktop) */}
-          <aside className="right-panel desktop-only">
-            <div className="sticky-results">
-              <h2 className="panel-title">📊 Resultados</h2>
+          <aside className="hidden lg:block">
+            <div className="sticky top-24">
+              <h2 className="mb-6 text-xl font-semibold text-white">📊 Resultados</h2>
               <ResultCard title="Economia Bike vs Moto" value={`R$ ${fmt(r.economiaBikeMoto)}`} sub="por mês" color="green" icon="💚" />
               <ResultCard title="Economia Bike vs Ônibus" value={`R$ ${fmt(r.economiaBikeOnibus)}`} sub="por mês" color="blue" icon="💙" />
               <ResultCard title="Economia Patinete vs Moto" value={`R$ ${fmt(r.economiaPatineteMoto)}`} sub="por mês" color="yellow" icon="💛" />
               <ResultCard title="Payback Bike" value={`${r.paybackBike} meses`} sub="para pagar o investimento" color="purple" icon="⏱️" />
               <ResultCard title="Payback Patinete" value={`${r.paybackPatinete} meses`} sub="para pagar o investimento" color="green" icon="⚡" />
 
-              <div className="cta-card">
-                <div className="cta-emoji">🎯</div>
-                <div className="cta-title">Quer a melhor bike?</div>
-                <div className="cta-sub">Use nosso recomendador inteligente</div>
-                <a href="/recomendador" className="cta-button">Encontrar Bike →</a>
+              <div className="mt-6 rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-center">
+                <div className="mb-2 text-4xl">🎯</div>
+                <div className="mb-1 text-lg font-semibold text-white">Quer a melhor bike?</div>
+                <div className="mb-4 text-sm text-slate-300">Use nosso recomendador inteligente</div>
+                <a href="/recomendador" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-400 px-6 py-3 font-semibold text-white no-underline shadow-lg transition-transform hover:-translate-y-0.5">Encontrar Bike →</a>
               </div>
             </div>
           </aside>
         </div>
       </main>
 
-      {/* MOBILE FAB */}
-      <button className="mobile-fab" onClick={() => setMobileOpen(true)}>
+      <button className="fixed bottom-6 right-6 z-50 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 px-6 py-4 font-semibold text-white shadow-xl lg:hidden" onClick={() => setMobileOpen(true)}>
         📊 Resultados
       </button>
 
-      {/* MOBILE SHEET */}
-      <div className={`mobile-sheet ${mobileOpen ? 'open' : ''}`}>
-        <div className="sheet-header">
-          <h3>📊 Resultados</h3>
-          <button className="sheet-close" onClick={() => setMobileOpen(false)}>✕</button>
+      <div className={`fixed bottom-0 left-0 right-0 z-40 max-h-[80vh] overflow-y-auto rounded-t-3xl border-t border-slate-700 bg-slate-800 p-6 transition-transform lg:hidden ${mobileOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-white">📊 Resultados</h3>
+          <button className="text-2xl text-slate-400" onClick={() => setMobileOpen(false)}>✕</button>
         </div>
         <ResultCard title="Economia Bike vs Moto" value={`R$ ${fmt(r.economiaBikeMoto)}`} sub="por mês" color="green" icon="💚" />
         <ResultCard title="Economia Bike vs Ônibus" value={`R$ ${fmt(r.economiaBikeOnibus)}`} sub="por mês" color="blue" icon="💙" />
